@@ -1,95 +1,70 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
+
+import {
+  CategoryScale,
+  Chart,
+  LinearScale,
+  LineController,
+  LineElement,
+  PointElement,
+  Title,
+} from "chart.js";
+import React, { useEffect, useState } from "react";
+import Legend from "@/normal/components/Legend";
+import MultilineChart from "@/normal/views/MultilineChart";
+
+import schc from "../normal/data/SCHC.json";
+import vcit from "../normal/data/VCIT.json";
+
+Chart.register(
+  LineController,
+  LineElement,
+  PointElement,
+  LinearScale,
+  Title,
+  CategoryScale,
+);
+
+const schcData = {
+  name: "SCHC",
+  color: "#d53e4f",
+  items: schc.map((d) => ({ ...d, date: new Date(d.date) })),
+};
+const vcitData = {
+  name: "VCIT",
+  color: "#5e4fa2",
+  items: vcit.map((d) => ({ ...d, date: new Date(d.date) })),
+};
 
 export default function Home() {
+  const [selectedItems, setSelectedItems] = useState<any>([]);
+  const legendData = [schcData, vcitData];
+  const chartData = [
+    ...[schcData, vcitData].filter((d) => selectedItems.includes(d.name)),
+  ];
+  const onChangeSelection = (name: any) => {
+    const newSelectedItems = selectedItems.includes(name)
+      ? selectedItems.filter((item: any) => item !== name)
+      : [...selectedItems, name];
+    setSelectedItems(newSelectedItems);
+  };
+  useEffect(() => {});
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+    <div className="App">
+      <Legend
+        data={legendData}
+        selectedItems={selectedItems}
+        onChange={onChangeSelection}
+      />
+      <MultilineChart
+        data={chartData}
+        margin={{
+          top: 0,
+          bottom: 100,
+          left: 150,
+          right: 150,
+        }}
+      />
+    </div>
   );
 }
