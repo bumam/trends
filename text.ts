@@ -1,4 +1,4 @@
-//
+// @ts-noCheck
 // Для стилизации осей и добавления подписей и линий вдоль осей в D3.js вместе с React, вам потребуется выполнить несколько действий:
 //
 //     1. Стилизация осей и тиков: Используйте CSS для задания стилей линий сетки и текста тиков. Например, в вашем CSS файле или теге <style>:
@@ -96,35 +96,20 @@
 //
 //     Этот код расширит основную линию оси x на 20 пикселей вправо. Вы можете изменить числа для расширения линии в другую сторону или для оси Y.
 
+// Предположим, что ось Y уже добавлена в SVG:
+const yAxisGroup = svg.append("g").attr("class", "y-axis").call(yAxis);
 
-Хоть в D3.js и нет прямого метода для добавления дополнительных путей (path) к элементу domain, вы всё же можете это сделать вручную, после того как ось будет отрендерена. Это можно сделать, добавив SVG path или line элемент и задав ему соответствующие атрибуты для имитации продолжения domain.
+// После отрисовки оси найдите конечную точку domain оси Y
+const domainPathY = yAxisGroup.select(".domain").node();
+const domainEndY = domainPathY.getPointAtLength(domainPathY.getTotalLength());
 
-    Например, если вы хотите добавить дополнительную длину к основной линии оси Х на 20 пикселей справа, вы можете сделать следующее:
-
-    JavaScript
-
-// Предположим, что у вас есть уже созданная ось 'xAxis' и добавленная на SVG:
-svg.append("g")
-    .attr("class", "x-axis")
-    // Позиционируем ось на SVG
-    .attr("transform", "translate(0," + height + ")")
-    .call(xAxis);
-
-// Получаем текущие координаты конца domain оси X
-var domain = svg.select(".x-axis .domain");
-var domainEnd = domain.node().getPointAtLength(domain.node().getTotalLength());
-
-// Добавляем линию, продолжающую domain оси X
-svg.select(".x-axis")
-    .append("line")
-    .attr("class", "domain-extension")
-    .attr("stroke", "currentColor") // Цвет такой же, как и у domain
-    .attr("stroke-width", 1) // Толщина линии такая же, как у domain
-    .attr("x1", domainEnd.x)
-    .attr("y1", domainEnd.y)
-    .attr("x2", domainEnd.x + 20)
-    .attr("y2", domainEnd.y);
-
-Обратите внимание, что .getPointAtLength() и .getTotalLength() - это методы SVG DOM API, которые позволяют вам определить точную позицию конца пути domain.
-
-    Этот код расширит основную линию оси x на 20 пикселей вправо. Вы можете изменить числа для расширения линии в другую сторону или для оси Y.
+// Добавьте к конечной точке вертикальную линию
+yAxisGroup
+  .append("line")
+  .attr("class", "domain-extension-y")
+  .attr("stroke", "currentColor") // используйте цвет, совпадающий с основной линией domain
+  .attr("stroke-width", 1) // толщина линии, как у основной линии domain
+  .attr("x1", domainEndY.x)
+  .attr("y1", domainEndY.y)
+  .attr("x2", domainEndY.x) // x не изменяется
+  .attr("y2", domainEndY.y - 20); // уменьшаем y чтобы поднять линию выше
