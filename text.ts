@@ -113,3 +113,76 @@ yAxisGroup
   .attr("y1", domainEndY.y)
   .attr("x2", domainEndY.x) // x не изменяется
   .attr("y2", domainEndY.y - 20); // уменьшаем y чтобы поднять линию выше
+
+
+
+TypeScript
+
+import React, { useEffect } from 'react';
+import * as d3 from 'd3';
+
+interface YourComponentProps {
+    // Определите свои собственные типы свойств здесь, если нужно
+}
+
+const YourComponent: React.FC<YourComponentProps> = (props) => {
+    // Типы для вашего ref и anchorEl, нужно их определить согласно вашему использованию
+    const ref = React.useRef<SVGGElement>(null);
+    const anchorEl = React.useRef<SVGGElement>(null);
+
+    // Добавьте типы для вашего масштаба. Например:
+    const scale = d3.scaleTime().domain(/* ... */).range(/* ... */);
+
+    useEffect(() => {
+        const anchorElement: SVGGElement | null = anchorEl.current;
+        if (!anchorElement) return;
+
+        const handleMouseOut = () => {
+            d3.select(ref.current)
+                .selectAll("text")
+                .attr("opacity", 0.5)
+                .style("font-weight", "normal");
+        };
+
+        const handleMouseMove = () => {
+            const mouse = d3.mouse(anchorElement);
+            const yDate = scale.invert(mouse[1]);
+
+            const textElements = d3.select(ref.current).selectAll("text");
+            // Предположим, у нас есть тип DateValuePair для данных
+            const data: DateValuePair[] = textElements.data();
+            const index = d3.bisector((d: DateValuePair) => d.date).left(data, yDate);
+            textElements
+                .attr("opacity", (_, i) => (i === index - 1 ? 1 : 0.5))
+                .style("font-weight", (_, i) => (i === index - 1 ? "bold" : "normal"));
+        };
+
+        d3.select(anchorElement)
+            .on("mouseout.axisY", handleMouseOut)
+            .on("mousemove.axisY", handleMouseMove);
+
+        // Clean up event listeners when the component unmounts
+        return () => {
+            if (ref.current) {
+                d3.select(anchorElement).on(".axisY", null);
+            }
+        };
+    }, [scale]);
+
+    // Рендеринг компонента...
+    return (
+        // Ваш JSX здесь
+    );
+};
+
+interface DateValuePair {
+    date: Date;
+    value: number;
+}
+
+export default YourComponent;
+
+Этот код предполагает, что тип DateValuePair используется для представления данных, связанных с каждым текстовым элементом, и он состоит из двух свойств: date, который является объектом Date, и value, представляющим числовое значение.
+
+    Объект scale также должен иметь соответствующие типы, исходя из того, что это временная шкала (scaleTime), вам потребуется определить домен и диапазон для этой функции масштабирования. Укажите соответствующие типы и данные согласно вашему контексту и требованиям.
+
